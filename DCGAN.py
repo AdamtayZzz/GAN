@@ -15,20 +15,20 @@ class Generator(nn.Module):
     def __init__(self):
         super(Generator, self).__init__()
 
-        self.init_size = img_size // 4 
-        self.l1 = nn.Sequential(nn.Linear(100, 128 * self.init_size ** 2))
+        self.init_size = img_size // 4   # 32//4 =8 
+        self.l1 = nn.Sequential(nn.Linear(100, 128 * self.init_size ** 2))  # 100*128*8*8
 
         self.conv_blocks = nn.Sequential(
             nn.BatchNorm2d(128),    
-            nn.Upsample(scale_factor=2),  
-            nn.Conv2d(128, 128, 3, stride=1, padding=1), 
+            nn.Upsample(scale_factor=2),  #100*128*16*16
+            nn.Conv2d(128, 128, 3, stride=1, padding=1), #100*128*18*18-> 100*128*16*16 
             nn.BatchNorm2d(128, 0.8),
-            nn.LeakyReLU(0.2, inplace=True), 
-            nn.Upsample(scale_factor=2),  
-            nn.Conv2d(128, 64, 3, stride=1, padding=1), 
+            nn.LeakyReLU(0.2, inplace=True),
+            nn.Upsample(scale_factor=2),   #100*128*32*32
+            nn.Conv2d(128, 64, 3, stride=1, padding=1),  #100*128*34*34 -> 100*64*32*32
             nn.BatchNorm2d(64, 0.8),
             nn.LeakyReLU(0.2, inplace=True),
-            nn.Conv2d(64, channels, 3, stride=1, padding=1),  
+            nn.Conv2d(64, channels, 3, stride=1, padding=1), #100*64*34*34 -> 100*1*32*32
             nn.Tanh(),
         )
 
@@ -49,15 +49,14 @@ class Discriminator(nn.Module):
                 block.append(nn.BatchNorm2d(out_filters, 0.8))
             return block
 
-        self.model = nn.Sequential(
-            *discriminator_block(channels, 16, bn=False),  
-            *discriminator_block(16, 32), 
-            *discriminator_block(32, 64), 
-            *discriminator_block(64, 128), 
+        self.model = nn.Sequential( 
+            *discriminator_block(channels, 16, bn=False),   #100*1*34*34 ->100*16*17*17
+            *discriminator_block(16, 32),                   #100*16*19*19 100*32*10*10
+            *discriminator_block(32, 64),                   #100*32*12*12 100*64*6*6
+            *discriminator_block(64, 128),                  #100*64*8*8 100*128*4*4
         )
 
-        # The height and width of downsampled image
-        ds_size = img_size // 2 ** 4  
+        ds_size = img_size // 2 ** 4   # 32 // 16 =2
         self.adv_layer = nn.Sequential(nn.Linear(128 * ds_size ** 2, 1), nn.Sigmoid())
 
     def forward(self, img):
