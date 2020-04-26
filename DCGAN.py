@@ -50,10 +50,10 @@ class Discriminator(nn.Module):
             return block
 
         self.model = nn.Sequential( 
-            *discriminator_block(channels, 16, bn=False),   #100*1*34*34 ->100*16*17*17
-            *discriminator_block(16, 32),                   #100*16*19*19 100*32*10*10
-            *discriminator_block(32, 64),                   #100*32*12*12 100*64*6*6
-            *discriminator_block(64, 128),                  #100*64*8*8 100*128*4*4
+            *discriminator_block(channels, 16, bn=False),   #100*1*34*34 ->100*16*16*16
+            *discriminator_block(16, 32),                   #100*16*18*18 100*32*8*8
+            *discriminator_block(32, 64),                   #100*32*10*10 100*64*3*3
+            *discriminator_block(64, 128),                  #100*64*5*5 100*128*2*2
         )
 
         ds_size = img_size // 2 ** 4   # 32 // 16 =2
